@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  namespace: wordpress3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress:latest
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: wordpress-config
+        env:
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-password
+              key: password
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wordpress-pvc
